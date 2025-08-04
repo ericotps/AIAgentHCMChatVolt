@@ -9,13 +9,14 @@ from pydantic import BaseModel
 # 🔐 Carregar variáveis de ambiente
 load_dotenv()
 ZENDESK_EMAIL = os.getenv("ZENDESK_EMAIL")
-ZENDESK_TOKEN = os.getenv("ZENDESK_API_TOKEN")
+ZENDESK_TOKEN = os.getenv("ZENDESK_API_TOKEN_HOMOLOG")
 ZENDESK_SUBDOMAIN = "cxsenior1643201684"
-IA_ENDPOINT = "http://localhost:8000/perguntar/"
+# IA_ENDPOINT = "http://localhost:8000/perguntar/"
+IA_ENDPOINT = "http://localhost:8000/perguntarChatVolt"
 
 # 🕒 Calcula o timestamp para 20 minutos atrás
 agora = datetime.now(timezone.utc)
-vinte_minutos_atras = agora - timedelta(minutes=20) 
+vinte_minutos_atras = agora - timedelta(minutes=2000) 
 created_after = vinte_minutos_atras.strftime("%Y-%m-%dT%H:%M:%SZ")
 
 # 🔎 Query com filtro por data de criação e tag
@@ -23,6 +24,7 @@ query = (
     f"type:ticket tags:prod_gestao_de_pessoas_hcm_proc_windows created>={created_after}"
 )
 url = f"https://{ZENDESK_SUBDOMAIN}.zendesk.com/api/v2/search.json?query={query}"
+
 
 print(f"[🔗] Executando chamada para: {url}")
 print(f"[👤] Usuário: {ZENDESK_EMAIL}/token")
@@ -47,9 +49,9 @@ if response.status_code == 200:
             campos.get("4418031314324") == "Avançadas"
         ):
             # Ignorar tickets que já possuem a tag 'Resposta_IA'
-            if "resposta_ia" in ticket.get("tags", []) or "resposta_ia_false" in ticket.get("tags", []):
-                print(f"[⏩] Ticket #{ticket['id']} já possui tag 'Resposta_IA' ou 'Resposta_IA_False'. Pulando...")
-                continue
+            #if "resposta_ia" in ticket.get("tags", []) or "resposta_ia_false" in ticket.get("tags", []):
+            #    print(f"[⏩] Ticket #{ticket['id']} já possui tag 'Resposta_IA' ou 'Resposta_IA_False'. Pulando...")
+            #    continue
             tickets_filtrados.append(ticket)
 
     print(f"[🎯] {len(tickets_filtrados)} tickets mantidos após filtro por campos personalizados.")
@@ -75,7 +77,11 @@ for ticket in tickets_filtrados:
     print(f"[🤖] Enviando para IA: {pergunta_formatada}")
 
     try:
-        response_ia = requests.post(IA_ENDPOINT, json={"pergunta": pergunta_formatada})
+        response_ia = requests.post(IA_ENDPOINT, json={
+            "pergunta": pergunta_formatada,
+            "versao": versao, 
+            "ticket": str(ticket_id)
+        })
         if response_ia.status_code == 200:
             resposta_ia = response_ia.json().get("resposta", "(Sem resposta)")
             print(f"[✅] Resposta da IA: {resposta_ia}\n")
