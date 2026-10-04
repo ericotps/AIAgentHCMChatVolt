@@ -27,9 +27,9 @@ url = f"https://{ZENDESK_SUBDOMAIN}.zendesk.com/api/v2/search.json?query={query}
 
 
 print(f"[🔗] Executando chamada para: {url}")
-print(f"[👤] Usuário: {ZENDESK_EMAIL}/token")
+print("[Autenticação] Credenciais carregadas do ambiente.")
 if ZENDESK_TOKEN:
-    print(f"[🔑] Token: {ZENDESK_TOKEN[:5]}... (truncado por segurança)")
+    print("[Autenticação] Token configurado.")
 else:
     print("[❌] Token não carregado. Verifique seu arquivo .env")
 

@@ -7,3 +7,10 @@ venv/
 .env
 *.log
 *.txt
+
+# Dados locais e credenciais: nunca versionar
+logs/
+.env
+.env.*
+!.env.example
+*.log
